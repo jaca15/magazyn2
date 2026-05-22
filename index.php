@@ -46,9 +46,9 @@ $isAdmin = czy_admin();
       <?php endif; ?>
       <?php if ($isAdmin): ?>
       <li><button id="podmiot-btn" class="menu-btn" data-target="podmiot_panel.php">Podmioty</button></li>
-      <li><button id="podmiot-btn" class="menu-btn" data-target="kategoria_panel.php">Kategorie</button></li>
-      <li><button id="podmiot-btn" class="menu-btn" data-target="magazyn_panel.php">Magazyny</button></li>
-      <li><button id="podmiot-btn" class="menu-btn" data-target="lokalizacja_panel.php">Lokalizacje</button></li>
+      <li><button id="kategorie-btn" class="menu-btn" data-target="kategoria_panel.php">Kategorie</button></li>
+      <li><button id="magazyny-btn" class="menu-btn" data-target="magazyn_panel.php">Magazyny</button></li>
+      <li><button id="lokalizacje-btn" class="menu-btn" data-target="lokalizacja_panel.php">Lokalizacje</button></li>
       <li><button id="uzytkownicy-btn" class="menu-btn" data-target="users_panel.php">Użytkownicy</button></li>
       <?php endif; ?>
       <li><button id="profil-btn" class="menu-btn" data-target="user_edit.php">Mój profil</button></li>

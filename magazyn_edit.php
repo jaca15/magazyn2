@@ -31,6 +31,7 @@ if ($id <= 0) {
 
 // Obsługa POST (zapis zmian)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     $errors = [];
 
     // Pobierz i przytnij pola
@@ -117,6 +118,7 @@ try {
   <small class="hint">* - pola wymagane.</small>
 
   <form id="magazynEditForm" method="post" action="magazyn_edit.php" novalidate>
+    <?= csrf_field() ?>
        <input type="hidden" name="id" value="<?= (int)$magazyn['id'] ?>">
     <div id="form-feedback" class="form-feedback" aria-live="polite"></div>
 

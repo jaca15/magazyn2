@@ -90,13 +90,8 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $haslo, $options);
 } catch (PDOException $e) {
-    // W środowisku developerskim pokaż błąd dla diagnostyki; w produkcji ustaw $debug = false
-    $debug = true;
-    if ($debug) {
-        echo "Błąd połączenia z bazą danych: " . htmlspecialchars($e->getMessage());
-    } else {
-        echo "Błąd połączenia z bazą danych.";
-    }
+    error_log('Błąd połączenia z bazą danych: ' . $e->getMessage());
+    echo 'Błąd połączenia z bazą danych. Skontaktuj się z administratorem.';
     exit;
 }
 ?>

@@ -16,6 +16,7 @@ function is_ajax(): bool {
 */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    csrf_require();
     header('Content-Type: application/json; charset=utf-8');
     $deleteId = (int)$_POST['delete_id'];
 /*

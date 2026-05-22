@@ -20,6 +20,7 @@ try {
 } catch (Exception $e) { /* ignoruj */ }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     // Obsługa zapisu (AJAX POST)
     $errors = [];
 
@@ -30,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    
 
     // Walidacja
-    if ($nazwa_s === '') $errors[] = 'Nazwa jest wymagana.';
+    if ($nazwa === '') $errors[] = 'Nazwa jest wymagana.';
     if ($id_mag === null) $errors[] = 'Magazyn jest wymagany.';
     
    
@@ -69,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <small class="hint">* - pola wymagane.</small>
 
   <form id="lokalizacjaAddForm" method="post" action="lokalizacja_add.php" novalidate>
+    <?= csrf_field() ?>
     <div id="form-feedback" class="form-feedback" aria-live="polite"></div>
 
     <div class="form-row">

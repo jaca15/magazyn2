@@ -1,4 +1,6 @@
 <?php
+// DEPRECATED: Ten plik jest duplikatem user_add.php i zostaje zachowany wyłącznie ze względów
+// na kompatybilność wsteczną. Nowe odwołania powinny używać user_add.php.
 // user_add.php - formularz dodawania użytkownika + obsługa AJAX (dla dashboardu)
 // Uruchamiany z dashboardu w modalu lub bezpośrednio.
 // Wymagane: auth.php (require_admin()), polaczenie.php ($pdo)

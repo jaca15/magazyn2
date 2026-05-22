@@ -14,6 +14,12 @@ function resp($ok, $msg = '', $extra = []) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    resp(false, 'Zły typ żądania. Oczekiwano POST.');
+}
+
+csrf_require();
+
 // Logowanie rozpoczęcia działania skryptu
 file_put_contents(__DIR__ . '/logs/debug.log', "Rozpoczęto działanie skryptu wypozycz_zapisz.php\n", FILE_APPEND | LOCK_EX);
 
@@ -78,32 +84,9 @@ try {
 
     $pdo->commit();
 
-    // Tworzenie poprawnego linku do pliku PDF
- //   $baseURL = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/';
- //   $protokol_pdf = "{$baseURL}protokol_wydania.php?id={$lastId}";
-
-
-//---------------------
-
-// Tworzenie poprawnego linku do pliku PDF
-$baseURL = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/';
-$protokol_pdf = "{$baseURL}protokol_wydania.php?id={$lastId}";
-
-try {
-    // Bezpośrednie uruchomienie pliku protokol_wydania.php, aby PDF został automatycznie wygenerowany
-    $pdfResponse = file_get_contents($protokol_pdf);
-    
-    // Możesz dodać logi weryfikujące odpowiedź
-    file_put_contents(__DIR__ . '/logs/debug.log', "Wykonano generację PDF. URL: {$protokol_pdf}\nOdpowiedź: {$pdfResponse}\n", FILE_APPEND | LOCK_EX);
-} catch (Throwable $e) {
-    // Logowanie w przypadku błędu wygenerowania PDF
-    file_put_contents(__DIR__ . '/logs/error.log', "Błąd podczas uruchamiania pliku protokol_wydania.php: {$e->getMessage()}\n", FILE_APPEND | LOCK_EX);
-    resp(false, 'Wystąpił błąd podczas generacji protokołu PDF.');
-}
-
-//----------------------
-    // Logowanie linku do protokołu
-    file_put_contents(__DIR__ . '/logs/debug.log', "Link do wygenerowanego protokołu: {$protokol_pdf}\n", FILE_APPEND | LOCK_EX);
+    // Zbuduj link do protokołu PDF — klient otworzy go sam
+    $baseURL = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['REQUEST_URI']), '/') . '/';
+    $protokol_pdf = "{$baseURL}protokol_wydania.php?id={$lastId}";
 
     // Zwracanie odpowiedzi JSON
     resp(true, 'Wypożyczono sprzęt pomyślnie.', [

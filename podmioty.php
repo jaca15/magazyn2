@@ -1,4 +1,6 @@
 <?php
+// DEPRECATED: Ten plik jest starą wersją obsługi podmiotów. Nowe odwołania powinny używać
+// podmiot_panel.php / podmiot_add.php / podmiot_edit.php.
 require 'auth.php';
 require_login();
 require 'polaczenie.php';

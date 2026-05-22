@@ -1,4 +1,6 @@
 <?php
+// DEPRECATED: Ten plik jest duplikatem user_edit.php i zostaje zachowany wyłącznie ze względów
+// na kompatybilność wsteczną. Nowe odwołania powinny używać user_edit.php.
 // user_edit.php - formularz edycji użytkownika + zapis (obsługa AJAX/modal i bezpośrednio)
 // Rozszerzenie: dodana sekcja zmiany hasła (opcjonalna) oraz walidacja po stronie serwera.
 // Wymagane: auth.php (require_admin()), polaczenie.php ($pdo)

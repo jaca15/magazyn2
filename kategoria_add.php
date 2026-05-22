@@ -16,6 +16,7 @@ function is_ajax(): bool {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     // Obsługa zapisu (AJAX POST)
     $errors = [];
 
@@ -75,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <small class="hint">* - pola wymagane.</small>
 
   <form id="kategoriaAddForm" method="post" action="kategoria_add.php" novalidate>
+    <?= csrf_field() ?>
     <div id="form-feedback" class="form-feedback" aria-live="polite"></div>
 
     <div class="form-row">

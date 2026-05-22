@@ -55,6 +55,7 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     $errors = [];
 
     $login = $isAdmin ? trim((string)($_POST['nazwa_uzytkownika'] ?? '')) : (string)$user['nazwa_uzytkownika'];
@@ -169,6 +170,7 @@ $panelTitle = ($isOwnProfile || !$isAdmin) ? 'Mój profil' : 'Edytuj użytkownik
   <h2><?= h($panelTitle) ?></h2>
 
   <form id="userEditForm" method="post" action="user_edit.php" novalidate>
+    <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= (int)$user['id'] ?>">
 
     <div id="form-feedback" class="form-feedback" aria-live="polite"></div>

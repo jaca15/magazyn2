@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(false, 'Zły typ żądania. Oczekiwano POST.');
 }
 
+csrf_require();
+
 $ids = $_POST['ids'] ?? [];
 $qtys = $_POST['qtys'] ?? [];
 $uwagiZwroty = $_POST['uwagi_zw'] ?? [];
@@ -68,14 +70,13 @@ try {
 //********        
 
         // Walidacja ilości
-//        $sprzetId = (int)$row['sprzet_id'];
         $aktualnaIloscSprzetu = (int)$row['aktualna_ilosc_sprzetu'];
         $iloscdozwrotu = (int)$row['aktualna_ilosc_sprzetu'];
         $iloscWypozyczona = (int)$row['ilosc_wypozyczona'];
         $nazwaSprzetu = $row['nazwa'];
 
-        if ($qty < 1 || $qty > $iloscWypozyczona) {
-            $results[] = ['wyp_id' => $id, 'success' => false, 'message' => 'Nieprawidłowa ilość zwrotu.'];
+        if ($qty < 1 || $qty > $iloscdozwrotu) {
+            $results[] = ['wyp_id' => $id, 'success' => false, 'message' => 'Nieprawidłowa ilość zwrotu (maksymalnie ' . $iloscdozwrotu . ' szt.).'];
             continue;
         }
 
@@ -99,9 +100,9 @@ try {
 //            ':sprzet_id' => $sprzetId
 //        ]);
 
-        // Zaktualizuj rekord wypożyczenia (dodaj uwagi do zwrotu i zmień status)
-        $nowailospozwrocie = $aktualnaIloscSprzetu -$qty; 
-        $statusZwrotu = ($qty === $aktualnaIloscSprzetu) ? 'zwrócono' : 'zwroty częściowe';
+        // Zaktualizuj rekord wypożyczenia (zaktualizuj do_zwrotu i zmień status)
+        $nowailospozwrocie = $aktualnaIloscSprzetu - $qty;
+        $statusZwrotu = ($nowailospozwrocie === 0) ? 'zwrócono' : 'zwroty częściowe';
         $stmtUpdateWypozyczenia = $pdo->prepare("
             UPDATE wypozyczenia
             SET do_zwrotu = :do_zwrotu, data_zwrotu = NOW(), uwagi_zw = :uwagi_zw, status = :status  
@@ -127,7 +128,7 @@ try {
 
 
     $pdo->commit();
-    respond(true, 'Zwrot zakończony sukcesem.' . $stan, $results);
+    respond(true, 'Zwrot zakończony sukcesem.', $results);
 } catch (Throwable $e) {
     $pdo->rollBack();
     error_log('Błąd podczas obsługi zwrotów: ' . $e->getMessage());

@@ -1,20 +1,18 @@
 <?php
 // ustaw_haslo_admin.php - wymusza utworzenie konta 'admin' (graficznie zgodne z logowanie.php)
+require_once 'auth.php';
 require 'polaczenie.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require_once 'app_settings.php';
 
 function h($v){ return htmlspecialchars($v === null ? '' : $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 
-// Sprawdź, czy istnieje właściwe konto admin
+// Sprawdź, czy istnieje jakikolwiek administrator w systemie
 try {
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS cnt FROM uzytkownicy WHERE nazwa_uzytkownika = ? AND rola = 'admin'");
-    $stmt->execute(['admin']);
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS cnt FROM uzytkownicy WHERE rola = 'admin'");
+    $stmt->execute();
     $row = $stmt->fetch();
     if ($row && $row['cnt'] > 0) {
-        // jeśli admin istnieje, przekieruj do logowania
+        // jeśli jakikolwiek admin istnieje, przekieruj do logowania
         header('Location: logowanie.php');
         exit;
     }
@@ -25,6 +23,9 @@ try {
 
 $blad = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_validate()) {
+        $blad = 'Błąd weryfikacji formularza. Odśwież stronę i spróbuj ponownie.';
+    } else {
     $haslo = $_POST['haslo'] ?? '';
     $haslo2 = $_POST['haslo2'] ?? '';
 
@@ -66,9 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: index.php');
             exit;
         } catch (Exception $e) {
-            $blad = 'Błąd przy tworzeniu konta: ' . htmlspecialchars($e->getMessage());
+            error_log('ustaw_haslo_admin.php: błąd przy tworzeniu konta: ' . $e->getMessage());
+            $blad = 'Błąd przy tworzeniu konta. Skontaktuj się z administratorem systemu.';
         }
     }
+    } // end csrf check
 }
 ?>
 <!doctype html>
@@ -111,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php endif; ?>
 
       <form method="post" novalidate>
+        <?= csrf_field() ?>
         <div class="row">
           <label for="haslo">Nowe hasło</label>
           <input id="haslo" name="haslo" type="password" required>
