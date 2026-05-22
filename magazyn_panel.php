@@ -16,6 +16,7 @@ function is_ajax(): bool {
 */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    csrf_require();
     header('Content-Type: application/json; charset=utf-8');
     $deleteId = (int)$_POST['delete_id'];
 
@@ -47,7 +48,7 @@ $offset = ($page - 1) * $perPage;
 
 /* --- Pobierz liczbę kategorii i stronę danych --- */
 try {
-    $totalStmt = $pdo->query("SELECT COUNT(*) AS total FROM kategorie");
+    $totalStmt = $pdo->query("SELECT COUNT(*) AS total FROM magazyny");
     $totalRecords = (int)$totalStmt->fetchColumn();
 } catch (Throwable $e) {
     error_log('magazyn_panel count error: ' . $e->getMessage());

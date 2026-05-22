@@ -47,6 +47,7 @@ try {
 
 // Obsługa POST (aktualizacja)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     // Pobierz pola
     $nazwa = trim($_POST['nazwa'] ?? '');
     $kategoria_id = isset($_POST['kategoria_id']) && $_POST['kategoria_id'] !== '' ? (int)$_POST['kategoria_id'] : null;
@@ -239,6 +240,7 @@ $val = array_merge($existing, $_POST ?? []);
 ?>
 <!-- Używamy id dodaj-sprzet-form aby przejąć style -->
 <form id="dodaj-sprzet-form" action="edytuj_sprzet.php" method="post" enctype="multipart/form-data">
+    <?= csrf_field() ?>
   <h2 id="modal-title">Edytuj sprzęt — <?= h($existing['nazwa']) ?> (ID: <?= h($id) ?>)</h2>
   <input type="hidden" name="id" value="<?= h($id) ?>">
 

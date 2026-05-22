@@ -18,6 +18,7 @@ function is_ajax(): bool {
 $allowed_roles = ['admin', 'gosc', 'magazynier'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     // Obsługa zapisu (AJAX POST)
     $errors = [];
 
@@ -97,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <h2>Dodaj użytkownika</h2>
    
   <form id="userAddForm" method="post" action="user_add.php" novalidate>
+    <?= csrf_field() ?>
     <div id="form-feedback" class="form-feedback" aria-live="polite">
          <small class="hint">* - pola wymagane.</small>
     </div>

@@ -33,6 +33,7 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     $haslo = (string)($_POST['haslo'] ?? '');
     $haslo2 = (string)($_POST['haslo2'] ?? '');
     $haslo = trim($haslo);
@@ -105,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div id="bladClient" class="form-error" style="display:none; margin-top:8px;"></div>
 
     <form method="post" id="formZmiana" novalidate>
+    <?= csrf_field() ?>
       <div class="form-row">
         <label for="haslo">Nowe hasło <span aria-hidden="true">*</span></label>
         <input id="haslo" name="haslo" type="password" required autocomplete="new-password" class="form-control" />

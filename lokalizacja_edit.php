@@ -1,5 +1,5 @@
 <?php
-// magazyn_edit.php - formularz edycji magazynu + zapis (obsługa AJAX/modal i bezpośrednio)
+// lokalizacja_edit.php - formularz edycji lokalizacji + zapis (obsługa AJAX/modal i bezpośrednio)
 // Wymagane: auth.php (require_admin()), polaczenie.php ($pdo)
 require_once 'auth.php';
 require_admin();
@@ -13,154 +13,129 @@ function is_ajax(): bool {
     return false;
 }
 
-
-
-// Pobierz id podmiotu (GET lub POST)
+// Pobierz id lokalizacji (GET lub POST)
 $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 if ($id <= 0) {
     if (is_ajax()) {
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'errors' => ['Nieprawidłowy identyfikator magazynu.']]);
+        echo json_encode(['success' => false, 'errors' => ['Nieprawidłowy identyfikator lokalizacji.']]);
         exit;
     }
-    header('Location: magazyn_panel.php');
+    header('Location: lokalizacja_panel.php');
     exit;
 }
 
-
+// Lista magazynów do wyboru
+try {
+    $magazyny = $pdo->query("SELECT id, nazwa FROM magazyny ORDER BY nazwa")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    $magazyny = [];
+}
 
 // Obsługa POST (zapis zmian)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     $errors = [];
 
     // Pobierz i przytnij pola
-    $nazwa = trim((string)($_POST['nazwa'] ?? ''));
-    $opis = trim((string)($_POST['opis'] ?? ''));
-    $adres = trim((string)($_POST['adres'] ?? ''));
-    $zarzadzajacy = trim((string)($_POST['zarzadzajacy'] ?? ''));
-    $kontakt = trim((string)($_POST['kontakt'] ?? ''));
-   
+    $nazwa   = trim((string)($_POST['nazwa'] ?? ''));
+    $id_mag  = isset($_POST['id_mag']) && $_POST['id_mag'] !== '' ? (int)$_POST['id_mag'] : null;
+    $uwagi   = trim((string)($_POST['uwagi'] ?? ''));
 
     // Walidacja
     if ($nazwa === '') $errors[] = 'Nazwa jest wymagana.';
-    if ($zarzadzajacy === '') $errors[] = 'Wskazanie zarządzającego jest wymagane.';
-    if ($adres === '') $errors[] = 'Adres jest wymagany.';
-    
+    if ($id_mag === null) $errors[] = 'Magazyn jest wymagany.';
 
-   
-
-    // Przygotuj dynamiczny UPDATE
-    $fields = [
-            'nazwa' => $nazwa,
-            'adres' => $adres,
-            'opis' => $opis,
-            'zarzadzajacy' => $zarzadzajacy,
-            'kontakt' => $kontakt
-    ];
-
-   
-    // Zbuduj SQL dynamicznie
-    $setParts = [];
-    $params = [];
-    foreach ($fields as $col => $val) {
-        $setParts[] = "$col = :$col";
-        $params[":$col"] = $val;
+    if (!empty($errors)) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'errors' => $errors]);
+        exit;
     }
-    $params[':id'] = $id;
-    $sql = "UPDATE magazyny SET " . implode(', ', $setParts) . " WHERE id = :id";
 
     try {
-        $upd = $pdo->prepare($sql);
-        $upd->execute($params);
+        $upd = $pdo->prepare("UPDATE lokalizacje SET nazwa = :nazwa, id_mag = :id_mag, uwagi = :uwagi WHERE id = :id");
+        $upd->execute([':nazwa' => $nazwa, ':id_mag' => $id_mag, ':uwagi' => $uwagi, ':id' => $id]);
 
-        // Przygotuj odpowiedź
-        $resp = ['success' => true, 'message' => 'Zapisano zmiany.'];
-      //  if ($passwordProvided) $resp['password_changed'] = true;
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($resp);
+        echo json_encode(['success' => true, 'message' => 'Zapisano zmiany.']);
         exit;
     } catch (Throwable $e) {
-        error_log('magazyn_edit save error: ' . $e->getMessage());
+        error_log('lokalizacja_edit save error: ' . $e->getMessage());
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'errors' => ['Błąd zapisu do bazy danych!']]);
+        echo json_encode(['success' => false, 'errors' => ['Błąd zapisu do bazy danych.']]);
         exit;
     }
 }
 
-// Jeśli nie POST — pobierz dane kategorii i wyświetl formularz
+// Jeśli nie POST — pobierz dane lokalizacji i wyświetl formularz
 try {
-    $q = $pdo->prepare("SELECT id, nazwa, adres, opis, zarzadzajacy, kontakt FROM magazyny WHERE id = :id LIMIT 1");
+    $q = $pdo->prepare("SELECT id, nazwa, id_mag, uwagi FROM lokalizacje WHERE id = :id LIMIT 1");
     $q->execute([':id' => $id]);
-    $magazyn = $q->fetch(PDO::FETCH_ASSOC);
-    if (!$magazyn) {
+    $lokalizacja = $q->fetch(PDO::FETCH_ASSOC);
+    if (!$lokalizacja) {
         if (is_ajax()) {
             header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'errors' => ['Magazyn nie istnieje.']]);
+            echo json_encode(['success' => false, 'errors' => ['Lokalizacja nie istnieje.']]);
             exit;
         }
-        header('Location: magazyn_panel.php');
+        header('Location: lokalizacja_panel.php');
         exit;
     }
 } catch (Throwable $e) {
-    error_log('kategoria_edit fetch error: ' . $e->getMessage());
+    error_log('lokalizacja_edit fetch error: ' . $e->getMessage());
     if (is_ajax()) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'errors' => ['Błąd serwera.']]);
         exit;
     }
-    header('Location: magazyn_panel.php');
+    header('Location: lokalizacja_panel.php');
     exit;
 }
 ?>
-<div id="user-add-panel" class="content">
-  <h2>Edytuj magazyn</h2>
+<div id="lokalizacja-edit-panel" class="content">
+  <h2>Edytuj lokalizację</h2>
   <small class="hint">* - pola wymagane.</small>
 
-  <form id="magazynEditForm" method="post" action="magazyn_edit.php" novalidate>
-       <input type="hidden" name="id" value="<?= (int)$magazyn['id'] ?>">
+  <form id="lokalizacjaEditForm" method="post" action="lokalizacja_edit.php" novalidate>
+    <input type="hidden" name="id" value="<?= (int)$lokalizacja['id'] ?>">
+    <?= csrf_field() ?>
     <div id="form-feedback" class="form-feedback" aria-live="polite"></div>
 
     <div class="form-row">
       <label for="nazwa">Nazwa <span aria-hidden="true">*</span></label>
-      <input id="nazwa" name="nazwa" type="text" required maxlength="100" class="form-control" value="<?= h($magazyn['nazwa']) ?>" />
+      <input id="nazwa" name="nazwa" type="text" required maxlength="100" class="form-control" value="<?= h($lokalizacja['nazwa']) ?>" />
     </div>
 
     <div class="form-row">
-      <label for="adres">Adres </span></label>
-      <input id="adres" name="adres" type="text" required maxlength="255" class="form-control" value="<?= h($magazyn['adres']) ?>" />
-    </div>
-    
-    <div class="form-row">
-      <label for="opis">Opis </span></label>
-      <input id="opis" name="opis" type="text" required maxlength="255" class="form-control" value="<?= h($magazyn['opis']) ?>" />
-    </div>
-    
-    <div class="form-row">
-      <label for="zarzadzajacy">Zarządzający </span></label>
-      <input id="zarzadzajacy" name="zarzadzajacy" type="text" required maxlength="255" class="form-control" value="<?= h($magazyn['zarzadzajacy']) ?>" />
-    </div>
-    
-    <div class="form-row">
-      <label for="kontakt">Kontakt </span></label>
-      <input id="kontakt" name="kontakt" type="text" required maxlength="255" class="form-control" value="<?= h($magazyn['kontakt']) ?>" />
+      <label for="id_mag">Magazyn <span aria-hidden="true">*</span></label>
+      <select id="id_mag" name="id_mag" required class="form-control">
+        <option value="">Wybierz...</option>
+        <?php foreach ($magazyny as $m): ?>
+          <option value="<?= (int)$m['id'] ?>" <?= (string)$lokalizacja['id_mag'] === (string)$m['id'] ? 'selected' : '' ?>>
+            <?= h($m['nazwa']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
-       <div class="form-actions" style="margin-top:12px;">
+    <div class="form-row">
+      <label for="uwagi">Uwagi</label>
+      <input id="uwagi" name="uwagi" type="text" maxlength="150" class="form-control" value="<?= h($lokalizacja['uwagi'] ?? '') ?>" />
+    </div>
+
+    <div class="form-actions" style="margin-top:12px;">
       <button type="submit" class="btn btn-primary">Zapisz</button>
       <button type="button" class="btn btn-outline" onclick="if(window.closeModal) window.closeModal(); else history.back();">Anuluj</button>
     </div>
   </form>
 
-<script>
-    // Jeśli formularz jest w modalu dashboardu, attachFormHandler w index.js zajmie się submitem.
-    // Dla bezpieczeństwa, obsłużimy też lokalny submit jeśli ktoś otworzy formularz bez dashboardu.
+  <script>
     (function(){
-      var form = document.getElementById('magazynEditForm');
+      var form = document.getElementById('lokalizacjaEditForm');
       if (!form) return;
 
-      // jeśli submitFormAjax jest dostępny (z index.js), to on zrobi AJAX; w przeciwnym razie wykonaj prosty AJAX tutaj
       form.addEventListener('submit', function(e){
-        if (typeof submitFormAjax === 'function') return; // global handler przejmie formularz
+        if (typeof submitFormAjax === 'function') return;
         e.preventDefault();
         var fb = document.getElementById('form-feedback');
         fb.innerHTML = '<em>Wysyłanie…</em>';
@@ -177,12 +152,11 @@ try {
             setTimeout(function(){
               if (typeof window.closeModal === 'function') {
                 window.closeModal();
-                // reload users panel if loader available
                 if (typeof window.loadContent === 'function') {
-                  window.loadContent('magazyn_edit.php');
+                  window.loadContent('lokalizacja_panel.php');
                 }
               } else {
-                window.location.href = 'magazyn_edit.php';
+                window.location.href = 'lokalizacja_panel.php';
               }
             }, 700);
           } else {

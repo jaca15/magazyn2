@@ -39,6 +39,7 @@ try {
 
 // Obsługa POST (zapis)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     // Dane podstawowe
     $nazwa = trim($_POST['nazwa'] ?? '');
     $kategoria_id = isset($_POST['kategoria_id']) && $_POST['kategoria_id'] !== '' ? (int)$_POST['kategoria_id'] : null;
@@ -198,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // --- Formularz (fragment HTML) ---
 ?>
 <form id="dodaj-sprzet-form" action="dodaj_sprzet.php" method="post" enctype="multipart/form-data">
+    <?= csrf_field() ?>
   <h2 id="modal-title">Dodaj nowy sprzęt</h2>
 
   <!-- Dane podstawowe -->
