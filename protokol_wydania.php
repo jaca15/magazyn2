@@ -40,7 +40,11 @@ $folderAbsolutny = __DIR__ . '/protokoly';
 
 // Tworzenie folderu na pliki PDF, jeśli nie istnieje
 if (!is_dir($folderAbsolutny)) {
-    @mkdir($folderAbsolutny, 0750, true);
+    if (!mkdir($folderAbsolutny, 0750, true) && !is_dir($folderAbsolutny)) {
+        error_log('protokol_wydania: nie można utworzyć katalogu protokoly/');
+        http_response_code(500);
+        exit('Błąd konfiguracji serwera — skontaktuj się z administratorem.');
+    }
 }
 if (!is_writable($folderAbsolutny)) {
     error_log('protokol_wydania: brak praw zapisu w katalogu protokoly/');
